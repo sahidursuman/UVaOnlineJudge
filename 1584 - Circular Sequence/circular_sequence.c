@@ -1,64 +1,71 @@
-#include <math.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <assert.h>
-#include <limits.h>
 #include <stdbool.h>
 
-//---------------------------------------------------------------------------
-//! \brief	    Calculates the DNA problem solution.
-//!
-//! \param[in,out]  st Char pointer to the DNA sequence. The content will be modified with the lexicographically smallest string.
-//!
-//! \return	    TRUE if everything is OK, FALSE in case of error.   
-//!
-//! \notes          The algorithm is O(n): slicing is O(n) + comparisong is O(n).
-//!
-//!		    I made some assumptions as:
-//!                 - Infinite memory (malloc never fails).
-//!                 - Standard lib functions always work (no errors).
-//!                 - Inputs from STDIN are always OK.
-//!
-int DNA_Problem(char st[])
+
+bool DNA_Problem(char st[])
 {
 	if (st != NULL)
 	{
-		int idx = 0;
-		int length = strlen(st);
-		char* buffer = (char *) malloc (length * sizeof(char));		
-		/*
-			Essentially it takes the slice playing with the indexes (Python style) and then compare using strncmp (lexicographically).
-	        */
-		for (int i = 0; i < strlen(st); i++) {
-			memset(buffer, 0, length); // O(n)
-			strcat(buffer, st+i); // first slice O(n)
-			strncpy(buffer+strlen(st+i),st,i); //second slice O(n)
-			if (strncmp(buffer, st, length) < 0) // comparing if is smaller or not O(n)
-			{				
-				strncpy(st,buffer,length);
+		int i, j, k;
+		int smallest_start = 0;
+		int n = strlen(st);
+
+		if ((n >= 2) || (n <= 100))		
+		{
+			for (i = 0; i < n; i++)
+			{	
+				for (j=(smallest_start%n), k=(i+1)%n; j != (smallest_start+n-1)%n; j=(++j)%(n), k=(++k)%(n))
+				{
+					if (st[k] < st[j])
+					{
+						smallest_start=(i+1)%n;
+						break;
+					}
+					else if (st[k] > st[j])
+						break;				
+				}
+			}
+	
+			char* cpy = (char*)malloc((n+1)*(sizeof(char)));
+
+			if (NULL != cpy)
+			{
+				for (i = 0; i < n; i++) {
+					cpy[i]= st[(smallest_start+i)%n];
+				}
+
+				for (i = 0; i < n; i++) {
+					st[i]= cpy[i];
+				}
+
+				free(cpy);
+
+				return true;
 			}
 		}
-	
-		free(buffer);	
-
-		return true;
 	}
 
-	return false;	
+	return false;
 }
 
 
-int main(){
+int main()
+{
     int t; 
+    int a0;
+
     scanf("%d",&t);
-//  printf("%d\n",t);
-    for(int a0 = 0; a0 < t; a0++){
-        char* expression = (char *)malloc(512000 * sizeof(char)); //value totally arbitrary
-        scanf("%s\n",expression);
-	DNA_Problem(expression);
-	printf("%s\n",expression);	
-	free(expression);
+
+	for(a0 = 0; a0 < t; a0++) 
+	{
+        char* expression = (char *)malloc(512000 * sizeof(char)); 
+		scanf("%s\n",expression);
+		DNA_Problem(expression);
+		printf("%s\n",expression);
+		free(expression);
     }
+
     return 0;
 }
